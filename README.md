@@ -5,9 +5,9 @@
 
 <img src=".github/images/icon.jpeg" alt="CarrierPigeons Logo" width="220"/>
 
-# <code>❯ Carrier Pigeons</code>
+# Carrier Pigeons
 
-**Edge telemetry, reliably delivered at scale**
+**Continuous Telemetric Documentation, reliably delivered at scale**
 
 <!-- BADGES -->
 <!-- local repository, no metadata badges. -->
