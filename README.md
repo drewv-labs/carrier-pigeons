@@ -3,7 +3,7 @@
 <!-- HEADER STYLE: CLASSIC -->
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/drewv-labs/carrierpigeons/main/.github/images/icon.jpeg" alt="CarrierPigeons Logo" width="220"/>
+<img src=".github/images/icon.jpeg" alt="CarrierPigeons Logo" width="220"/>
 
 # <code>❯ Carrier Pigeons</code>
 
