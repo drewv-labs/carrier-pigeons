@@ -5,8 +5,8 @@
 
 <img src=".github/images/icon.jpeg" alt="CarrierPigeons Logo" width="300"/>
 
-**Continuous Telemetric Documentation,**  
-*reliably delivered at scale*
+**Continuous Telemetric Documentation**  
+*Reliably delivered at scale*
 
 <!-- BADGES -->
 <!-- local repository, no metadata badges. -->
