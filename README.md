@@ -3,11 +3,10 @@
 <!-- HEADER STYLE: CLASSIC -->
 <div align="center">
 
-<img src=".github/images/icon.jpeg" width="30%" style="position: relative; top: 0; right: 0;" alt="Project Logo"/>
+<img src=".github/images/icon.jpeg" alt="CarrierPigeons Logo" width="300"/>
 
-# <code>❯ Carrier Pigeons</code>
-
-**Edge telemetry, reliably delivered at scale**
+**Continuous Telemetric Documentation**  
+*Reliably delivered at scale*
 
 <!-- BADGES -->
 <!-- local repository, no metadata badges. -->
