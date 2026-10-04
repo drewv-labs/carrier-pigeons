@@ -9,10 +9,7 @@
 *Reliably delivered at scale*
 
 <!-- BADGES -->
-<!-- local repository, no metadata badges. -->
-
-~ Built with the tools and technologies ~
-
+<!-- local repository, no metadata badges. -->ß
 <img src="https://img.shields.io/badge/Go-00ADD8.svg?style=default&logo=Go&logoColor=white" alt="Go">
 <img src="https://img.shields.io/badge/MQTT-660066.svg?style=default&logo=mqtt&logoColor=white" alt="MQTT">
 <img src="https://img.shields.io/badge/PostgreSQL-4169E1.svg?style=default&logo=postgresql&logoColor=white" alt="PostgreSQL">
@@ -39,6 +36,8 @@
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 
+<br>
+
 ---
 
 ## Overview
@@ -56,6 +55,8 @@ This project empowers developers to build scalable, observable infrastructure mo
 - **🔄 State machine orchestration:** Thread-safe connection lifecycle management with readiness signals and transition callbacks
 - **📝 YAML-driven configuration:** Centralized, validated settings for MQTT, storage, workers, and metrics exposure
 
+<br>
+
 ---
 
 ## Features
@@ -68,6 +69,8 @@ This project empowers developers to build scalable, observable infrastructure mo
 | 🔌 | **Integrations**  | <ul><li>Uses <code>paho.golang</code> → indicates integration with <strong>Eclipse Paho MQTT client</strong> for IoT/messaging</li><li>Uses <code>pgpassfile</code>, <code>pgservicefile</code> → implies PostgreSQL connectivity via libpq (e.g., <code>lib/pq</code> or <code>pgx</code>)</li><li><code>crypto</code> and <code>sync</code> from stdlib used for secure operations and concurrency</li></ul> |
 | 🧩 | **Modularity**    | <ul><li>Explicit Go modules: <code>carrierpigeons/go.mod</code>, <code>pigeoncoop/go.mod</code></li><li>Internal packages likely separated under <code>internal/</code> to enforce encapsulation</li><li>Config-driven architecture via <code>config.example.yaml</code> enables runtime modularity</li></ul> |
 | 🧪 | **Testing**       | <ul><li>No explicit test files or <code>_test.go</code> mentioned in context</li><li>Standard Go testing framework available (<code>go test</code>)</li><li>Likely uses table-driven tests (Go best practice)</li></ul> |
+
+<br>
 
 ---
 
@@ -530,6 +533,8 @@ This project empowers developers to build scalable, observable infrastructure mo
 	</details>
 </details>
 
+<br>
+
 ---
 
 ## Getting Started
@@ -589,6 +594,7 @@ go run {entrypoint}
 go test ./...
 ```
 
+<br>
 
 ----
 
