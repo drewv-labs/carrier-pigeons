@@ -3,7 +3,7 @@
 <!-- HEADER STYLE: CLASSIC -->
 <div align="center">
 
-<img src=".github/images/icon.jpeg" alt="CarrierPigeons Logo" width="300"/>
+<img src=".github/images/icon.png" alt="CarrierPigeons Logo" width="300"/>
 
 **Continuous Telemetric Documentation**  
 *Reliably delivered at scale*
