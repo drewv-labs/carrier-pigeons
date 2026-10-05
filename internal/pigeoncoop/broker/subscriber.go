@@ -32,9 +32,13 @@ func NewSubscriber(brokerURL string, ledger Ledger) (*Subscriber, error) {
 	opts.SetAutoReconnect(true)
 
 	opts.OnConnect = func(client mqtt.Client) {
-		topic := "drewv/ctd/v1/#"
-		client.Subscribe(topic, 1, nil).Wait()
-		log.Printf("Subscribed to MQTT wildcard: %s", topic)
+		// 1. Subscribe to the telemetry firehose
+		client.Subscribe("drewv/ctd/v1/#", 1, nil)
+
+		// 2. Subscribe to the registry state changes with the specific Ntfy handler
+		client.Subscribe("drewv/ctd/v1/registry/+/status", 1, sub.handleRegistryUpdate)
+
+		log.Println("Subscribed to MQTT wildcard & registry topics")
 	}
 
 	client := mqtt.NewClient(opts)

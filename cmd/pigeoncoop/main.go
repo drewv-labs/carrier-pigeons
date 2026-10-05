@@ -9,6 +9,7 @@ import (
 
 	"github.com/drewv-labs/carrier-pigeons/internal/pigeoncoop/broker"
 	"github.com/drewv-labs/carrier-pigeons/internal/pigeoncoop/ledger"
+	"github.com/drewv-labs/carrier-pigeons/internal/pigeoncoop/migrations"
 )
 
 func main() {
@@ -23,6 +24,10 @@ func main() {
 	}
 	defer store.Close()
 	log.Println("Connected to PostgreSQL Ledger.")
+
+	if err := migrations.EnsureSchema(context.Background(), store); err != nil {
+		log.Fatalf("Migration failed: %v", err)
+	}
 
 	// 2. Initialize the MQTT Subscriber, injecting the 'store' as the Ledger interface
 	mqttSub, err := broker.NewSubscriber("tcp://localhost:1883", store)

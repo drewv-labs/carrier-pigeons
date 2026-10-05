@@ -12,6 +12,12 @@ type Store struct {
 	pool *pgxpool.Pool
 }
 
+// ExecRaw allows the migration engine to run DDL statements against the database.
+func (s *Store) ExecRaw(ctx context.Context, sql string) error {
+	_, err := s.pool.Exec(ctx, sql)
+	return err
+}
+
 // NewStore initializes the connection to the database.
 func NewStore(ctx context.Context, dbURL string) (*Store, error) {
 	pool, err := pgxpool.New(ctx, dbURL)
