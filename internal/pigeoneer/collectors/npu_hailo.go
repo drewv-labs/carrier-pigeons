@@ -8,8 +8,8 @@ import (
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-// MonitorHailo polls the NPU and sends telemetry to whatever Publisher is provided.
-func MonitorHailo(pub core.TelemetryPublisher, nodeID string) {
+// MonitorHailoNpu polls the NPU and sends telemetry to whatever Publisher is provided.
+func monitorHailoNpu(pub core.TelemetryPublisher, nodeID string) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -20,9 +20,9 @@ func MonitorHailo(pub core.TelemetryPublisher, nodeID string) {
 			AddMetric("power_w", 5.2)
 
 		if err := pub.Publish(event); err != nil {
-			log.Printf("[Hailo Collector] Failed to publish CTD: %v", err)
+			log.Printf("[Hailo NPU Collector] Failed to publish CTD: %v", err)
 			continue
 		}
-		log.Printf("[Hailo Collector] Deployed CTD -> %s", event.RoutingTopic())
+		log.Printf("[Hailo NPU Collector] Deployed CTD -> %s", event.RoutingTopic())
 	}
 }
