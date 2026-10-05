@@ -8,12 +8,12 @@ import (
 
 // CTDPayload represents a single telemetry event captured at the edge.
 type CTDPayload struct {
-	NodeID    string                 `json:"node_id"`
-	SessionID string                 `json:"session_id"`
-	Timestamp time.Time              `json:"timestamp"`
-	Component string                 `json:"component"`
-	Status    string                 `json:"status"`
-	Metrics   map[string]interface{} `json:"metrics,omitempty"`
+	NodeID    string         `json:"node_id"`
+	SessionID string         `json:"session_id"`
+	Timestamp time.Time      `json:"timestamp"`
+	Component string         `json:"component"`
+	Status    string         `json:"status"`
+	Metrics   map[string]any `json:"metrics,omitempty"`
 }
 
 // NewCTDPayload initializes a new telemetry event with safe defaults.
@@ -24,13 +24,13 @@ func NewCTDPayload(nodeID, sessionID, component string) *CTDPayload {
 		Timestamp: time.Now().UTC(),
 		Component: component,
 		Status:    "initialized",
-		Metrics:   make(map[string]interface{}),
+		Metrics:   make(map[string]any),
 	}
 }
 
 // AddMetric attaches a key-value data point to the payload's metrics map.
 // It returns the payload pointer to allow for method chaining.
-func (p *CTDPayload) AddMetric(key string, value interface{}) *CTDPayload {
+func (p *CTDPayload) AddMetric(key string, value any) *CTDPayload {
 	p.Metrics[key] = value
 	return p
 }
