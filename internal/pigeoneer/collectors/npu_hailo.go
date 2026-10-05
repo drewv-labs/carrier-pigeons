@@ -9,7 +9,7 @@ import (
 )
 
 // MonitorHailoNpu polls the NPU and sends telemetry to whatever Publisher is provided.
-func monitorHailoNpu(pub core.TelemetryPublisher, nodeID string) {
+func monitorHailoNPU(pub core.TelemetryPublisher, nodeID string) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 

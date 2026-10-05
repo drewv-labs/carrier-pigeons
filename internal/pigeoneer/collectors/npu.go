@@ -10,7 +10,7 @@ import (
 func MonitorNPU(pub core.TelemetryPublisher, nodeID string) {
 	if isInstalled("hailortcli") {
 		log.Println("[NPU Router] Hailo architecture detected. Booting Hailo collector.")
-		go monitorHailoNpu(pub, nodeID)
+		go monitorHailoNPU(pub, nodeID)
 
 	}
 	// if isInstalled("edgetpu_compiler") {

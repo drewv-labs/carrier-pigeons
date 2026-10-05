@@ -8,7 +8,7 @@ import (
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-func monitorIntelGpu(pub core.TelemetryPublisher, nodeID string) {
+func monitorIntelGPU(pub core.TelemetryPublisher, nodeID string) {
 	// 1. Launch the process to stream JSON (-J) every 5000ms (-s)
 	cmd := exec.Command("intel_gpu_top", "-J", "-s", "5000")
 

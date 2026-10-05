@@ -11,7 +11,7 @@ import (
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-func monitorNvidiaGpu(pub core.TelemetryPublisher, nodeID string) {
+func monitorNvidiaGPU(pub core.TelemetryPublisher, nodeID string) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 

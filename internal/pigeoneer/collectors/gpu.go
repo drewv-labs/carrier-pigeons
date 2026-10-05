@@ -11,15 +11,15 @@ import (
 func MonitorGPU(pub core.TelemetryPublisher, nodeID string) {
 	if isInstalled("nvidia-smi") {
 		log.Println("[GPU Router] Nvidia hardware detected. Booting NVML collector.")
-		go monitorNvidiaGpu(pub, nodeID)
+		go monitorNvidiaGPU(pub, nodeID)
 	}
 	if isInstalled("rocm-smi") {
 		log.Println("[GPU Router] AMD hardware detected. Booting ROCm collector.")
-		go monitorAmdGpu(pub, nodeID)
+		go monitorAMDGPU(pub, nodeID)
 	}
 	if isInstalled("intel_gpu_top") {
 		log.Println("[GPU Router] Intel hardware detected. Booting sysfs collector.")
-		go monitorIntelGpu(pub, nodeID)
+		go monitorIntelGPU(pub, nodeID)
 	}
 }
 

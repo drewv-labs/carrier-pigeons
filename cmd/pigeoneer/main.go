@@ -20,7 +20,8 @@ func main() {
 	log.Println("Network relay established.")
 
 	// 2. Deploy concurrent hardware collectors
-	go collectors.MonitorHailoNpu(mqttRelay, nodeID)
+	go collectors.MonitorGPU(mqttRelay, nodeID)
+	go collectors.MonitorNPU(mqttRelay, nodeID)
 	go collectors.MonitorSystem(mqttRelay, nodeID)
 
 	// 3. Block until shutdown
