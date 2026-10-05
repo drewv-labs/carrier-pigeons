@@ -1,0 +1,28 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    container_name: pigeon-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+  postgres-ledger:
+    image: postgres:16-alpine
+    container_name: pigeon-db
+    environment:
+      POSTGRES_USER: drewv
+      POSTGRES_PASSWORD: ctd_password
+      POSTGRES_DB: edge_ledger
+    ports:
+      - "5432:5432"
+    volumes:
+      - pigeon_db_data:/var/lib/postgresql/data
+      # Postgres automatically runs any .sql file in this folder on first boot
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+
+volumes:
+  pigeon_db_data: # Persists data so you don't lose the ledger if the container restarts

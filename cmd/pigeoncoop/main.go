@@ -1,53 +1,107 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// makeMessageHandler is a closure (factory) that injects the database connection
+// pool into the MQTT callback.
+func makeMessageHandler(db *pgxpool.Pool) mqtt.MessageHandler {
+	return func(client mqtt.Client, msg mqtt.Message) {
+		var event core.CTDPayload
+
+		if err := json.Unmarshal(msg.Payload(), &event); err != nil {
+			log.Printf("ERROR: Malformed CTD payload dropped from topic %s: %v", msg.Topic(), err)
+			return
+		}
+
+		// Create a strict 5-second timeout context for the database transaction
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		query := `
+			INSERT INTO telemetric_ledger
+			(node_id, session_id, event_timestamp, component, status, metrics)
+			VALUES ($1, $2, $3, $4, $5, $6)
+		`
+
+		// Execute the SQL statement. pgx automatically marshals the Go map into JSONB.
+		_, err := db.Exec(ctx, query,
+			event.NodeID,
+			event.SessionID,
+			event.Timestamp,
+			event.Component,
+			event.Status,
+			event.Metrics,
+		)
+
+		if err != nil {
+			log.Printf("DB INSERT ERROR: Failed to write event from %s: %v", event.NodeID, err)
+			return
+		}
+
+		log.Printf("[LEDGER INJECT] %s/%s -> PostgreSQL Insert Success", event.NodeID, event.Component)
+	}
+}
 
 func main() {
 	log.Println("Starting PigeonCoop: Telemetric Ledger Injector...")
 
-	// 1. Set up a channel to listen for interrupt signals (Ctrl+C, systemd stop)
+	// 1. Initialize PostgreSQL Connection Pool
+	// In production, this URL would come from os.Getenv("DATABASE_URL")
+	dbURL := "postgres://drewv:ctd_password@localhost:5432/edge_ledger"
+
+	dbPool, err := pgxpool.New(context.Background(), dbURL)
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v", err)
+	}
+	defer dbPool.Close()
+
+	if err := dbPool.Ping(context.Background()); err != nil {
+		log.Fatalf("Database connection dropped: %v", err)
+	}
+	log.Println("Successfully connected to PostgreSQL Ledger.")
+
+	// 2. Configure MQTT Client
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker("tcp://localhost:1883")
+	opts.SetClientID("pigeoncoop-ledger-injector-01")
+
+	// Inject the database pool into our message handler
+	opts.SetDefaultPublishHandler(makeMessageHandler(dbPool))
+
+	opts.OnConnect = func(client mqtt.Client) {
+		topic := "drewv/ctd/v1/#"
+		client.Subscribe(topic, 1, nil).Wait()
+		log.Printf("Subscribed to MQTT wildcard: %s", topic)
+	}
+	opts.SetAutoReconnect(true)
+
+	// 3. Connect to MQTT Broker
+	client := mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		log.Fatalf("Failed to connect to MQTT broker: %v", token.Error())
+	}
+
+	// 4. Block for Graceful Shutdown
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	// 2. (Placeholder) Initialize PostgreSQL Connection Pool
-	log.Println("Connecting to PostgreSQL Ledger...")
-
-	// 3. (Placeholder) Initialize MQTT Client
-	topic := "drewv/ctd/v1/#"
-	log.Printf("Subscribed to MQTT topic wildcard: %s", topic)
-
-	// Simulated incoming MQTT message callback
-	handleIncomingMQTT := func(payloadBytes []byte) {
-		// Allocate an empty CTDPayload struct in memory
-		var event core.CTDPayload
-
-		// Pass the memory address (&event) to the unmarshaler
-		err := json.Unmarshal(payloadBytes, &event)
-		if err != nil {
-			log.Printf("Error: Malformed CTD payload dropped: %v", err)
-			return
-		}
-
-		// The payload is now strictly typed and safe to use!
-		log.Printf("Ingested - Node: %s | Component: %s | Status: %s | Metrics: %v",
-			event.NodeID, event.Component, event.Status, event.Metrics)
-	}
-
-	// Simulating an incoming byte stream from the MQTT broker
-	dummyPayload := []byte(`{"node_id":"ada-1","session_id":"sess-123","timestamp":"2026-10-04T12:00:00Z","component":"hailo-npu","status":"inference_complete","metrics":{"temperature_c":45.5}}`)
-	handleIncomingMQTT(dummyPayload)
-
-	// 4. Block the main thread until a shutdown signal is received
 	log.Println("PigeonCoop is running. Waiting for telemetry...")
 	<-sigs
 
-	log.Println("Shutting down PigeonCoop gracefully...")
+	log.Println("Shutting down gracefully...")
+	client.Disconnect(250)
+	// dbPool.Close() is automatically called by the 'defer' statement above
 }
