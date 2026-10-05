@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -54,4 +55,9 @@ func (s *Store) InsertEvent(ctx context.Context, event *core.CTDPayload) error {
 		event.Metrics,
 	)
 	return err
+}
+
+// Query executes a query against the connection pool and returns pgx.Rows.
+func (s *Store) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
+	return s.pool.Query(ctx, sql, args...)
 }

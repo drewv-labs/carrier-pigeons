@@ -19,7 +19,7 @@ func monitorNvidiaGPU(pub core.TelemetryPublisher, nodeID string) {
 		// Include 'index' so we can tag each physical card uniquely
 		cmd := exec.Command(
 			"nvidia-smi",
-			"--query-gpu=index,temperature.gpu,utilization.gpu,memory.used",
+			"--query-gpu=index,temperature.gpu,utilization.gpu,memory.used,power.draw",
 			"--format=csv,noheader,nounits",
 		)
 		var out bytes.Buffer
@@ -47,14 +47,17 @@ func monitorNvidiaGPU(pub core.TelemetryPublisher, nodeID string) {
 			temp, _ := strconv.ParseFloat(strings.TrimSpace(fields[1]), 64)
 			util, _ := strconv.ParseFloat(strings.TrimSpace(fields[2]), 64)
 			memUsed, _ := strconv.ParseFloat(strings.TrimSpace(fields[3]), 64)
+			powerW, _ := strconv.ParseFloat(strings.TrimSpace(fields[4]), 64)
 
 			// 2. Publish with a unique component tag: nvidia-gpu-0, nvidia-gpu-1, etc.
 			componentID := "nvidia-gpu-" + gpuIdx
+
 			event := core.NewCTDPayload(nodeID, "session-live", componentID).
 				UpdateStatus("active").
 				AddMetric("temperature_c", temp).
 				AddMetric("utilization_pct", util).
-				AddMetric("memory_used_mb", memUsed)
+				AddMetric("memory_used_mb", memUsed).
+				AddMetric("power_w", powerW) // Now we are logging watts!
 
 			if err := pub.Publish(event); err != nil {
 				log.Printf("[Nvidia Collector] Publish failed for %s: %v", componentID, err)
