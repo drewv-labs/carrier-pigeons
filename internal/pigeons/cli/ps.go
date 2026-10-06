@@ -7,6 +7,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/drewv-labs/carrier-pigeons/internal/pigeons/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -76,19 +78,23 @@ var psCmd = &cobra.Command{
 			response = strings.TrimSpace(strings.ToLower(response))
 
 			if response == "y" || response == "yes" {
-				fmt.Println("\n[+] Initializing PigeonCommand Bubble Tea Panel...")
-				fmt.Println("--------------------------------------------------")
+				fmt.Println("\n[+] Handoff approved. Booting PigeonCare+...")
 
+				// Build the rich context
 				var contextBuilder strings.Builder
-				contextBuilder.WriteString("System Context:\n")
 				for group, issues := range degradedGroups {
-					contextBuilder.WriteString(fmt.Sprintf(" - Group [%s] has %d issues: %s\n", group, len(issues), strings.Join(issues, ", ")))
+					contextBuilder.WriteString(fmt.Sprintf(
+						"Group [%s]: %d issues -> %s\n",
+						group, len(issues), strings.Join(issues, ", "),
+					))
 				}
 
-				fmt.Printf("🤖 PigeonCare+: \"I see multiple correlated issues in the [%s] group.\n", "on-scope")
-				fmt.Println("   Since maryguider dropped completely and adactrl is thermal throttling,")
-				fmt.Println("   this looks like an environmental or physical power failure on the telescope mount.")
-				fmt.Println("   Pulling Postgres logs to verify if temperature spiked before the drop...")
+				// Launch the Bubble Tea program
+				p := tea.NewProgram(tui.NewAgentModel(contextBuilder.String()))
+				if _, err := p.Run(); err != nil {
+					fmt.Printf("Fatal error launching PigeonCare+: %v\n", err)
+					os.Exit(1)
+				}
 			}
 		}
 	},
