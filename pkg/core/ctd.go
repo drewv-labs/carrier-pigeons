@@ -9,6 +9,7 @@ import (
 // CTDPayload represents a single telemetry event captured at the edge.
 type CTDPayload struct {
 	NodeID    string         `json:"node_id"`
+	NodeGroup string         `json:"node_group"` // Added topological context
 	SessionID string         `json:"session_id"`
 	Timestamp time.Time      `json:"timestamp"`
 	Component string         `json:"component"`
