@@ -2,42 +2,59 @@ package adapters
 
 import (
 	"context"
+
+	"github.com/drewv-labs/carrier-pigeons/internal/pigeoncoop/ledger"
 )
 
-// Message represents a single turn in the chat history.
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+// Tool schemas mapped to the OpenAI/Ollama specification
+type ToolCallFunction struct {
+	Name      string         `json:"name"`
+	Arguments map[string]any `json:"arguments"`
 }
 
-// LLMAdapter is the universal interface for all inference backends.
+type ToolCall struct {
+	Function ToolCallFunction `json:"function"`
+}
+
+type Message struct {
+	Role      string     `json:"role"`
+	Content   string     `json:"content"`
+	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
+}
+
 type LLMAdapter interface {
 	Chat(ctx context.Context, systemPrompt string, history []Message) (string, error)
 }
 
-// Factory configuration for dynamic instantiation.
 type LLMConfig struct {
-	Provider string // ollama, claude, openai, llamacpp, vllm
+	Provider string
 	Model    string
 	Endpoint string
 	APIKey   string
+	Store    *ledger.Store // Injected so the LLM can query Postgres
 }
 
 // NewLLMAdapter routes the configuration to the correct silicon backend.
 func NewLLMAdapter(cfg LLMConfig) LLMAdapter {
 	switch cfg.Provider {
+
 	case "ollama":
-		return NewOllamaAdapter(cfg.Endpoint, cfg.Model)
+		return NewOllamaAdapter(cfg.Endpoint, cfg.Model, cfg.Store)
+
 	case "claude":
 		return NewClaudeAdapter(cfg.APIKey, cfg.Model)
+
 	case "openai":
 		return NewOpenAIAdapter(cfg.Endpoint, cfg.APIKey, cfg.Model)
+
 	case "llamacpp":
 		return NewLlamaCPPAdapter(cfg.Endpoint)
+
 	case "vllm":
 		return NewVLLMAdapter(cfg.Endpoint, cfg.Model)
+
 	default:
 		// Default to local open-weights for edge architecture
-		return NewOllamaAdapter("http://localhost:11434", "qwen2.5-coder")
+		return NewOllamaAdapter("http://localhost:11434", "qwen2.5-coder", cfg.Store)
 	}
 }
