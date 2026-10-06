@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS telemetric_ledger (
     id BIGSERIAL PRIMARY KEY,
     node_id TEXT NOT NULL,
+    node_group TEXT NOT NULL,
     session_id TEXT NOT NULL,
     event_timestamp TIMESTAMPTZ NOT NULL,
     component TEXT NOT NULL,
