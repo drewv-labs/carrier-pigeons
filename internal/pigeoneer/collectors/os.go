@@ -2,25 +2,28 @@ package collectors
 
 import (
 	"log"
-	"math/rand"
-	"time"
+	"runtime"
 
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-// monitorSystem runs concurrently, polling basic OS stats.
-func MonitorSystem(pub core.TelemetryPublisher, nodeID string) {
-	ticker := time.NewTicker(5 * time.Second) // Wakes up on a different schedule
-	defer ticker.Stop()
-
-	for range ticker.C {
-		event := core.NewCTDPayload(nodeID, "session-live", "system-os").
-			UpdateStatus("active").
-			AddMetric("ram_usage_mb", 1024+(rand.Intn(500)))
-
-		if err := pub.Publish(event); err != nil {
-			log.Printf("[System Collector] Failed to publish CTD: %v", err)
+// MonitorOS detects the host operating system and routes to the correct system poller.
+func MonitorOS(pub core.TelemetryPublisher, nodeID string) {
+	switch runtime.GOOS {
+	case "linux":
+		if isInstalled("ubus") {
+			log.Println("[OS Router] OpenWrt host detected.")
+			go monitorOSOpenWrt(pub, nodeID)
+		} else {
+			log.Println("[OS Router] Standard Unix host detected.")
+			go monitorOSUnix(pub, nodeID)
 		}
-		log.Printf("[System Collector] Deployed CTD -> %s", event.RoutingTopic())
+	case "windows":
+		log.Println("[OS Router] Windows host detected. Booting PowerShell CIM collector.")
+		go monitorOSWindows(pub, nodeID)
+	default:
+		// Graceful fallback for macOS (darwin) or BSD
+		log.Printf("[OS Router] Generic Unix host detected for %s.", runtime.GOOS)
+		go monitorOSUnix(pub, nodeID)
 	}
 }

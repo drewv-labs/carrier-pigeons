@@ -2,11 +2,16 @@ package cli
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strings"
 	"text/tabwriter"
 
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/drewv-labs/carrier-pigeons/internal/pigeoncoop/ledger"
+	"github.com/drewv-labs/carrier-pigeons/internal/pigeons/adapters"
+	"github.com/drewv-labs/carrier-pigeons/internal/pigeons/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -76,19 +81,37 @@ var psCmd = &cobra.Command{
 			response = strings.TrimSpace(strings.ToLower(response))
 
 			if response == "y" || response == "yes" {
-				fmt.Println("\n[+] Initializing PigeonCommand Bubble Tea Panel...")
-				fmt.Println("--------------------------------------------------")
+				fmt.Println("\n[+] Handoff approved. Booting PigeonCare+...")
 
 				var contextBuilder strings.Builder
-				contextBuilder.WriteString("System Context:\n")
 				for group, issues := range degradedGroups {
-					contextBuilder.WriteString(fmt.Sprintf(" - Group [%s] has %d issues: %s\n", group, len(issues), strings.Join(issues, ", ")))
+					contextBuilder.WriteString(fmt.Sprintf("Group [%s]: %d issues -> %s\n", group, len(issues), strings.Join(issues, ", ")))
 				}
 
-				fmt.Printf("🤖 PigeonCare+: \"I see multiple correlated issues in the [%s] group.\n", "on-scope")
-				fmt.Println("   Since maryguider dropped completely and adactrl is thermal throttling,")
-				fmt.Println("   this looks like an environmental or physical power failure on the telescope mount.")
-				fmt.Println("   Pulling Postgres logs to verify if temperature spiked before the drop...")
+				// 1. Connect to Postgres (using your local connection string)
+				dbURL := "postgres://drewv:ctd_password@localhost:5432/edge_ledger"
+				store, err := ledger.NewStore(context.Background(), dbURL)
+				if err != nil {
+					fmt.Printf("Failed to connect to ledger: %v\n", err)
+					os.Exit(1)
+				}
+				defer store.Close()
+
+				// 2. Initialize the LLM with the active database connection
+				llmCfg := adapters.LLMConfig{
+					Provider: "ollama",
+					Endpoint: "http://localhost:11434",
+					Model:    "qwen2.5-coder",
+					Store:    store, // Injected!
+				}
+				agentLLM := adapters.NewLLMAdapter(llmCfg)
+
+				// 3. Boot Bubble Tea
+				p := tea.NewProgram(tui.NewAgentModel(contextBuilder.String(), agentLLM))
+				if _, err := p.Run(); err != nil {
+					fmt.Printf("Fatal error launching PigeonCare+: %v\n", err)
+					os.Exit(1)
+				}
 			}
 		}
 	},
