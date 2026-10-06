@@ -55,6 +55,6 @@ func NewLLMAdapter(cfg LLMConfig) LLMAdapter {
 
 	default:
 		// Default to local open-weights for edge architecture
-		return NewOllamaAdapter("http://localhost:11434", "qwen2.5-coder", cfg.Store)
+		return NewOllamaAdapter("http://localhost:11434", "qwen3.6:35b-a3b-q8_0", cfg.Store)
 	}
 }
