@@ -6,11 +6,11 @@ import (
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-// MonitorNPU detects local neural processing units and routes to the correct sensor binary.
-func MonitorNPU(pub core.TelemetryPublisher, nodeID string) {
+// monitorNPU detects local neural processing units and routes to the correct sensor binary.
+func monitorNPU(pub core.TelemetryPublisher, nodeID string) {
 	if isInstalled("hailortcli") {
 		log.Println("[NPU Router] Hailo architecture detected. Booting Hailo collector.")
-		go monitorHailoNPU(pub, nodeID)
+		go monitorNPUHailo(pub, nodeID)
 
 	}
 	// if isInstalled("edgetpu_compiler") {

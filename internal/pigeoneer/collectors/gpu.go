@@ -7,19 +7,19 @@ import (
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-// MonitorGPU detects the local hardware and routes to the correct sensor binary.
-func MonitorGPU(pub core.TelemetryPublisher, nodeID string) {
+// monitorGPU detects the local hardware and routes to the correct sensor binary.
+func monitorGPU(pub core.TelemetryPublisher, nodeID string) {
 	if isInstalled("nvidia-smi") {
 		log.Println("[GPU Router] Nvidia hardware detected. Booting NVML collector.")
-		go monitorNvidiaGPU(pub, nodeID)
+		go monitorGPUNvidia(pub, nodeID)
 	}
 	if isInstalled("rocm-smi") {
 		log.Println("[GPU Router] AMD hardware detected. Booting ROCm collector.")
-		go monitorAMDGPU(pub, nodeID)
+		go monitorGPUAMD(pub, nodeID)
 	}
 	if isInstalled("intel_gpu_top") {
 		log.Println("[GPU Router] Intel hardware detected. Booting sysfs collector.")
-		go monitorIntelGPU(pub, nodeID)
+		go monitorGPUIntel(pub, nodeID)
 	}
 }
 

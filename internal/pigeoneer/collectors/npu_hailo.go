@@ -19,7 +19,7 @@ var (
 	deviceRegex = regexp.MustCompile(`(?i)(?:Device|PCIe)\s+([0-9a-fA-F:\.]+)`)
 )
 
-func monitorHailoNPU(pub core.TelemetryPublisher, nodeID string) {
+func monitorNPUHailo(pub core.TelemetryPublisher, nodeID string) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
