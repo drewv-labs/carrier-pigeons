@@ -32,3 +32,6 @@ go.work.sum
 # .vscode/
 graphify-out/
 .graphify/
+.zed
+.aiignore
+.readmeaiignore
