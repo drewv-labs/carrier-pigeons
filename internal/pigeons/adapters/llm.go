@@ -23,7 +23,8 @@ type Message struct {
 }
 
 type LLMAdapter interface {
-	Chat(ctx context.Context, systemPrompt string, history []Message) (string, error)
+	// StreamChat returns a channel that yields tokens as they are generated.
+	StreamChat(ctx context.Context, systemPrompt string, history []Message) (<-chan string, error)
 }
 
 type LLMConfig struct {
@@ -31,7 +32,7 @@ type LLMConfig struct {
 	Model    string
 	Endpoint string
 	APIKey   string
-	Store    *ledger.Store // Injected so the LLM can query Postgres
+	Store    *ledger.Store
 }
 
 // NewLLMAdapter routes the configuration to the correct silicon backend.
@@ -41,17 +42,17 @@ func NewLLMAdapter(cfg LLMConfig) LLMAdapter {
 	case "ollama":
 		return NewOllamaAdapter(cfg.Endpoint, cfg.Model, cfg.Store)
 
-	case "claude":
-		return NewClaudeAdapter(cfg.APIKey, cfg.Model)
-
-	case "openai":
-		return NewOpenAIAdapter(cfg.Endpoint, cfg.APIKey, cfg.Model)
-
-	case "llamacpp":
-		return NewLlamaCPPAdapter(cfg.Endpoint)
-
-	case "vllm":
-		return NewVLLMAdapter(cfg.Endpoint, cfg.Model)
+		// 	case "claude":
+		// 		return NewClaudeAdapter(cfg.APIKey, cfg.Model)
+		//
+		// 	case "openai":
+		// 		return NewOpenAIAdapter(cfg.Endpoint, cfg.APIKey, cfg.Model)
+		//
+		// 	case "llamacpp":
+		// 		return NewLlamaCPPAdapter(cfg.Endpoint)
+		//
+		// 	case "vllm":
+		// 		return NewVLLMAdapter(cfg.Endpoint, cfg.Model)
 
 	default:
 		// Default to local open-weights for edge architecture

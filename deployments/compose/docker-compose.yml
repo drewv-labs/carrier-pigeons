@@ -24,5 +24,34 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     restart: unless-stopped
 
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: pigeon-ntfy
+    command: serve
+    ports:
+      - "2586:80"
+    environment:
+      # Sets the base URL for the web app and notifications
+      - NTFY_BASE_URL=http://localhost:2586
+
+      # SQLite cache file for persisting messages across container restarts
+      - NTFY_CACHE_FILE=/var/cache/ntfy/cache.db
+
+      # (Optional) Required to wake up iOS devices via Apple Push Notification service
+      # while keeping your server strictly inside your local network.
+      - NTFY_UPSTREAM_BASE_URL=https://ntfy.sh
+
+      # (Optional) Disable web UI if you strictly want API access
+      # - NTFY_WEB_ROOT=disable
+    volumes:
+      - ./data/ntfy:/var/cache/ntfy
+    restart: unless-stopped
+    networks:
+      - pigeon-net # Ensure it shares a network with PigeonCoop
+
+networks:
+  pigeon-net:
+    driver: bridge
+
 volumes:
   pigeon_db_data: # Persists data so you don't lose the ledger if the container restarts

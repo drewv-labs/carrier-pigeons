@@ -7,9 +7,10 @@
 *.dll
 *.so
 *.dylib
-
 # Test binary, built with `go test -c`
 *.test
+# Build test, built with `go build -o {name}.dev ./cmd/{name}
+*.dev
 
 # Code coverage profiles and other test artifacts
 *.out
@@ -28,10 +29,15 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+.zed
+
+# AI Tools
 graphify-out/
 .graphify/
-.zed
 .aiignore
 .readmeaiignore
+
+# Misc
+data/

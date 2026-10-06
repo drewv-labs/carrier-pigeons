@@ -30,7 +30,7 @@ func (s *Subscriber) handleRegistryUpdate(client mqtt.Client, msg mqtt.Message) 
 // sendNtfyAlert pushes a notification to your local Ntfy instance.
 func sendNtfyAlert(nodeID, status string) {
 	// Adjust this URL to point to the Ntfy server in your homelab edge architecture
-	url := "http://ntfy.drewv.local/carrier-pigeons"
+	url := "http://localhost:2586/carrier-pigeons"
 
 	var message string
 	if status == "OFFLINE" {
