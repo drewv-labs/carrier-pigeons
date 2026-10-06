@@ -30,8 +30,8 @@ func monitorOSUnix(pub core.TelemetryPublisher, nodeID string) {
 
 		// Parse Total Memory Capacity
 		if memBytes, err := os.ReadFile("/proc/meminfo"); err == nil {
-			lines := strings.Split(string(memBytes), "\n")
-			for _, line := range lines {
+			// Iterate efficiently without heap-allocating a string slice
+			for line := range strings.SplitSeq(string(memBytes), "\n") {
 				if strings.HasPrefix(line, "MemTotal:") {
 					fields := strings.Fields(line)
 					if len(fields) >= 2 {
@@ -39,7 +39,7 @@ func monitorOSUnix(pub core.TelemetryPublisher, nodeID string) {
 							event.AddMetric("mem_total_mb", kb/1024)
 						}
 					}
-					break
+					break // Halt the iterator immediately after parsing
 				}
 			}
 		}
