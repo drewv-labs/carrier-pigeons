@@ -15,6 +15,7 @@ func EnsureSchema(ctx context.Context, store *ledger.Store) error {
 		CREATE TABLE IF NOT EXISTS telemetric_ledger (
 			id SERIAL PRIMARY KEY,
 			node_id VARCHAR(255) NOT NULL,
+			node_group TEXT NOT NULL,
 			session_id VARCHAR(255) NOT NULL,
 			event_timestamp TIMESTAMPTZ NOT NULL,
 			component VARCHAR(255) NOT NULL,
@@ -23,11 +24,14 @@ func EnsureSchema(ctx context.Context, store *ledger.Store) error {
 			ingested_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 		);
 
-		-- Create a GIN index on the JSONB column for querying deeply nested edge metrics
-		CREATE INDEX IF NOT EXISTS idx_telemetric_metrics ON telemetric_ledger USING GIN (metrics);
+		-- Index for time-series queries (e.g., "show me the last hour of telemetry")
+		CREATE INDEX idx_ledger_timestamp ON telemetric_ledger (event_timestamp DESC);
 
 		-- Create a B-Tree index on the node and component for fast time-series dashboarding
-		CREATE INDEX IF NOT EXISTS idx_telemetric_node_comp ON telemetric_ledger (node_id, component, event_timestamp DESC);
+		CREATE INDEX IF NOT EXISTS idx_telemetric_node_component ON telemetric_ledger (node_id, component, event_timestamp DESC);
+
+		-- Create a GIN index on the JSONB column for querying deeply nested edge metrics
+		CREATE INDEX IF NOT EXISTS idx_telemetric_metrics ON telemetric_ledger USING GIN (metrics);
 	`
 
 	if err := store.ExecRaw(ctx, query); err != nil {

@@ -42,12 +42,13 @@ func (s *Store) Close() {
 func (s *Store) InsertEvent(ctx context.Context, event *core.CTDPayload) error {
 	query := `
 		INSERT INTO telemetric_ledger
-		(node_id, session_id, event_timestamp, component, status, metrics)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		(node_id, node_group, session_id, event_timestamp, component, status, metrics)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
 	_, err := s.pool.Exec(ctx, query,
 		event.NodeID,
+		event.NodeGroup,
 		event.SessionID,
 		event.Timestamp,
 		event.Component,
