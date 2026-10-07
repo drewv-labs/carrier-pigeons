@@ -8,10 +8,22 @@
 **Continuous Telemetric Documentation**  
 *Reliably delivered at scale*
 
-<!-- BADGES -->
+<br>
+
+---
+
+~ Built with ~ 
+
 <img src="https://img.shields.io/badge/Go-00ADD8.svg?style=default&logo=Go&logoColor=white" alt="Go">
 <img src="https://img.shields.io/badge/MQTT-660066.svg?style=default&logo=mqtt&logoColor=white" alt="MQTT">
 <img src="https://img.shields.io/badge/PostgreSQL-4169E1.svg?style=default&logo=postgresql&logoColor=white" alt="PostgreSQL">
+
+~ for ~
+
+![Arch](https://img.shields.io/badge/Arch-riscv64%20|%20arm64%20|%20x86-blue)  
+![OS](https://img.shields.io/badge/OS-MacOS%20|%20UNIX%20|%20OpenWrt%20|%20Windows-blue)  
+![GPU](https://img.shields.io/badge/GPU-Nvidia%20|%20AMD%20|%20Apple%20|%20Intel-blue)  
+![NPU](https://img.shields.io/badge/NPU-Hailo%20|%20Google_Coral%20|%20Apple_ANE-blue)  
 
 </div>
 
