@@ -25,7 +25,7 @@ func EnsureSchema(ctx context.Context, store *ledger.Store) error {
 		);
 
 		-- Index for time-series queries (e.g., "show me the last hour of telemetry")
-		CREATE INDEX idx_ledger_timestamp ON telemetric_ledger (event_timestamp DESC);
+		CREATE INDEX IF NOT EXISTS idx_ledger_timestamp ON telemetric_ledger (event_timestamp DESC);
 
 		-- Create a B-Tree index on the node and component for fast time-series dashboarding
 		CREATE INDEX IF NOT EXISTS idx_telemetric_node_component ON telemetric_ledger (node_id, component, event_timestamp DESC);

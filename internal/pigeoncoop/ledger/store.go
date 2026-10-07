@@ -45,7 +45,6 @@ func (s *Store) InsertEvent(ctx context.Context, event *core.CTDPayload) error {
 		(node_id, node_group, session_id, event_timestamp, component, status, metrics)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-
 	_, err := s.pool.Exec(ctx, query,
 		event.NodeID,
 		event.NodeGroup,
