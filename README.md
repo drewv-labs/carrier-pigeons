@@ -8,10 +8,6 @@
 **Continuous Telemetric Documentation**  
 *Reliably delivered at scale*
 
-<br>
-
----
-
 ~ Built with ~ 
 
 <img src="https://img.shields.io/badge/Go-00ADD8.svg?style=default&logo=Go&logoColor=white" alt="Go">
