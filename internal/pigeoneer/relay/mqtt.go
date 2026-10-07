@@ -1,10 +1,8 @@
 package relay
 
 import (
-	"encoding/json"
 	"log"
 
-	"github.com/drewv-labs/carrier-pigeons/internal/pigeoneer/benchmark"
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -44,25 +42,4 @@ func (m *MQTTClient) Publish(event *core.CTDPayload) error {
 // Disconnect safely closes the network socket.
 func (m *MQTTClient) Disconnect() {
 	m.client.Disconnect(250)
-}
-
-func (c *MQTTClient) SubscribeControl(nodeID string, pub core.TelemetryPublisher) error {
-	topic := "pigeons/control/" + nodeID
-
-	token := c.client.Subscribe(topic, 1, func(client mqtt.Client, msg mqtt.Message) {
-		var cmd struct {
-			Action   string            `json:"action"`
-			Duration int               `json:"duration_sec"`
-			Targets  benchmark.Targets `json:"targets"`
-		}
-
-		if err := json.Unmarshal(msg.Payload(), &cmd); err == nil {
-			if cmd.Action == "benchmark-start" {
-				go benchmark.RunSyntheticLoad(nodeID, cmd.Duration, cmd.Targets, pub)
-			}
-		}
-	})
-
-	token.Wait()
-	return token.Error()
 }
