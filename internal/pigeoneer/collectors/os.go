@@ -10,6 +10,10 @@ import (
 // MonitorOS detects the host operating system and routes to the correct system poller.
 func MonitorOS(pub core.TelemetryPublisher, nodeID string) {
 	switch runtime.GOOS {
+	case "darwin":
+		log.Println("[OS Router] MacOS/Darwin host detected.")
+		go monitorOSUnix(pub, nodeID)
+		return
 	case "linux":
 		if isInstalled("ubus") {
 			log.Println("[OS Router] OpenWrt host detected.")
@@ -22,7 +26,6 @@ func MonitorOS(pub core.TelemetryPublisher, nodeID string) {
 		log.Println("[OS Router] Windows host detected. Booting PowerShell CIM collector.")
 		go monitorOSWindows(pub, nodeID)
 	default:
-		// Graceful fallback for macOS (darwin) or BSD
 		log.Printf("[OS Router] Generic Unix host detected for %s.", runtime.GOOS)
 		go monitorOSUnix(pub, nodeID)
 	}
