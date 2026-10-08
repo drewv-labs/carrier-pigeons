@@ -12,7 +12,7 @@ import (
 
 type BenchmarkRunner struct{}
 
-// Auto-register upon binary execution
+// Automatically bind to the execution registry on binary boot
 func init() {
 	runner.Register(&BenchmarkRunner{})
 }
@@ -22,13 +22,15 @@ func (b *BenchmarkRunner) Name() string {
 }
 
 func (b *BenchmarkRunner) Run(ctx context.Context, nodeID string, params map[string]any, pub core.TelemetryPublisher) error {
-	// Parse dynamic JSON parameters passed from the CLI
+	// Parse dynamic JSON parameters passed over MQTT
 	durationSec := 60
 	if d, ok := params["duration_sec"].(float64); ok {
 		durationSec = int(d)
 	}
 
 	targetSystem, _ := params["target_system"].(bool)
+	targetNPU, _ := params["target_npu"].(bool) // Placeholder for Hailo/Coral CLI hooks
+	targetGPU, _ := params["target_gpu"].(bool)
 
 	runID := time.Now().UnixNano()
 
@@ -37,23 +39,25 @@ func (b *BenchmarkRunner) Run(ctx context.Context, nodeID string, params map[str
 		UpdateStatus("runner-start").
 		AddMetric("run_id", runID).
 		AddMetric("duration_sec", durationSec).
-		AddMetric("target_system", targetSystem)
+		AddMetric("target_system", targetSystem).
+		AddMetric("target_npu", targetNPU).
+		AddMetric("target_gpu", targetGPU)
 	pub.Publish(startEvent)
 
-	// Enforce the duration
+	// Enforce the requested duration without blocking the main runner dispatcher
 	runCtx, cancel := context.WithTimeout(ctx, time.Duration(durationSec)*time.Second)
 	defer cancel()
 
-	// 2. Execute Workload
+	// 2. Execute Hardware Workloads
 	if targetSystem {
-		for i := 0; i < runtime.NumCPU(); i++ {
+		for range runtime.NumCPU() {
 			go func() {
 				for {
 					select {
 					case <-runCtx.Done():
 						return
 					default:
-						// CPU Burner
+						// CPU Burner: Force thermal and power draw spike
 						_ = sha256.Sum256([]byte("carrier-pigeons-burn"))
 					}
 				}
@@ -61,10 +65,10 @@ func (b *BenchmarkRunner) Run(ctx context.Context, nodeID string, params map[str
 		}
 	}
 
-	// Wait for the duration to elapse
+	// 3. Block until duration expires
 	<-runCtx.Done()
 
-	// 3. Emit CTD End Bookend
+	// 4. Emit CTD End Bookend
 	endEvent := core.NewCTDPayload(nodeID, "session-live", "runner:benchmark").
 		UpdateStatus("runner-end").
 		AddMetric("run_id", runID)

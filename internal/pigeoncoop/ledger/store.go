@@ -49,7 +49,7 @@ func (s *Store) InsertEvent(ctx context.Context, event *core.CTDPayload) error {
 		event.NodeID,
 		event.NodeGroup,
 		event.SessionID,
-		event.Timestamp,
+		event.EventTimestamp,
 		event.Component,
 		event.Status,
 		event.Metrics,

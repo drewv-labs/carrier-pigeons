@@ -8,24 +8,24 @@ import (
 
 // CTDPayload represents a single telemetry event captured at the edge.
 type CTDPayload struct {
-	NodeID    string         `json:"node_id"`
-	NodeGroup string         `json:"node_group"` // Added topological context
-	SessionID string         `json:"session_id"`
-	Timestamp time.Time      `json:"timestamp"`
-	Component string         `json:"component"`
-	Status    string         `json:"status"`
-	Metrics   map[string]any `json:"metrics,omitempty"`
+	NodeID         string         `json:"node_id"`
+	NodeGroup      string         `json:"node_group"` // Added topological context
+	SessionID      string         `json:"session_id"`
+	EventTimestamp time.Time      `json:"timestamp"`
+	Component      string         `json:"component"`
+	Status         string         `json:"status"`
+	Metrics        map[string]any `json:"metrics"`
 }
 
 // NewCTDPayload initializes a new telemetry event with safe defaults.
 func NewCTDPayload(nodeID, sessionID, component string) *CTDPayload {
 	return &CTDPayload{
-		NodeID:    nodeID,
-		SessionID: sessionID,
-		Timestamp: time.Now().UTC(),
-		Component: component,
-		Status:    "initialized",
-		Metrics:   make(map[string]any),
+		NodeID:         nodeID,
+		SessionID:      sessionID,
+		EventTimestamp: time.Now().UTC(),
+		Component:      component,
+		Status:         "initialized",
+		Metrics:        make(map[string]any),
 	}
 }
 

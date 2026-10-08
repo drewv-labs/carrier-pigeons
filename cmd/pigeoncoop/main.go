@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	log.Println("Starting PigeonCoop: Telemetric Ledger Injector...")
+	log.Println("Starting PigeonCoop: CTD Ledger Injector...")
 
 	// 1. Initialize the PostgreSQL Store
 	dbURL := "postgres://drewv:ctd_password@localhost:5432/edge_ledger"

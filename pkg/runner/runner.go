@@ -8,7 +8,7 @@ import (
 	"github.com/drewv-labs/carrier-pigeons/pkg/core"
 )
 
-// Runner defines a targeted execution workload that can be dispatched to an edge node.
+// Runner represents any targeted remote execution task.
 type Runner interface {
 	Name() string
 	Run(ctx context.Context, nodeID string, params map[string]any, pub core.TelemetryPublisher) error
@@ -19,15 +19,14 @@ var (
 	registry = make(map[string]Runner)
 )
 
-// Register binds a new runner into the active Pigeoneer engine.
-// Wrapper projects will call this in their init() functions.
+// Register is called in init() functions to bind a runner to the edge daemon.
 func Register(r Runner) {
 	mu.Lock()
 	defer mu.Unlock()
 	registry[r.Name()] = r
 }
 
-// Get retrieves a registered runner by its exact name.
+// Get safely retrieves a registered runner by name.
 func Get(name string) (Runner, bool) {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -35,12 +34,24 @@ func Get(name string) (Runner, bool) {
 	return r, ok
 }
 
-// Envelope defines the expected MQTT JSON payload for remote dispatch.
+// RegistryNames returns a list of all currently registered runners.
+func RegistryNames() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	names := make([]string, 0, len(registry))
+	for name := range registry {
+		names = append(names, name)
+	}
+	return names
+}
+
+// Envelope defines the wire protocol for MQTT control dispatches.
 type Envelope struct {
 	Runner string         `json:"runner"`
 	Params map[string]any `json:"params"`
 }
 
+// Validate ensures the payload has the minimum required routing data.
 func (e Envelope) Validate() error {
 	if e.Runner == "" {
 		return fmt.Errorf("missing runner execution name")

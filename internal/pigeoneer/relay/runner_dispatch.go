@@ -17,7 +17,7 @@ func (c *MQTTClient) ListenForRunners(nodeID string, pub core.TelemetryPublisher
 	token := c.client.Subscribe(topic, 1, func(client mqtt.Client, msg mqtt.Message) {
 		var env runner.Envelope
 		if err := json.Unmarshal(msg.Payload(), &env); err != nil {
-			log.Printf("[Runner Dispatch] Invalid control envelope: %v", err)
+			log.Printf("[Runner Dispatch] Invalid envelope dropped: %v", err)
 			return
 		}
 
@@ -32,15 +32,16 @@ func (c *MQTTClient) ListenForRunners(nodeID string, pub core.TelemetryPublisher
 			return
 		}
 
-		// Execute the runner without blocking the active MQTT subscription thread
+		// Fire in an isolated goroutine to prevent blocking the MQTT receiver thread
 		go func() {
 			log.Printf("[Runner Dispatch] Executing %q on %s", env.Runner, nodeID)
 
-			// Context can be expanded later to support remote cancellation over MQTT
+			// We inject a background context, which could easily be swapped for a
+			// context with a timeout if the Envelope provides one.
 			ctx := context.Background()
 
 			if err := task.Run(ctx, nodeID, env.Params, pub); err != nil {
-				log.Printf("[Runner Dispatch] Runner %q exited with error: %v", env.Runner, err)
+				log.Printf("[Runner Dispatch] Runner %q failed: %v", env.Runner, err)
 			}
 		}()
 	})
