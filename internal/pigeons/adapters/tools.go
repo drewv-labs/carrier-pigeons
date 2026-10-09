@@ -31,13 +31,13 @@ var PigeonTools = []map[string]any{
 		"type": "function",
 		"function": map[string]any{
 			"name":        "analyze_latest_benchmark",
-			"description": "Fetch the hardware telemetry strictly bounded by the most recent runner execution for a node.",
+			"description": "Fetch the hardware telemetry strictly bounded by the most recent runner execution for a given node.",
 			"parameters": map[string]any{
 				"type": "object",
 				"properties": map[string]any{
 					"node_id": map[string]any{
 						"type":        "string",
-						"description": "The edge node ID (e.g., caroline_hailo)",
+						"description": "The edge node ID (e.g., ada-node-1, caroline_hailo)",
 					},
 				},
 				"required": []string{"node_id"},
@@ -60,11 +60,11 @@ func ExecuteTool(ctx context.Context, name string, args map[string]any, store *l
 		}
 
 		query := `
-			SELECT component, metrics, event_timestamp
-			FROM telemetric_ledger
-			WHERE node_id = $1
-			ORDER BY event_timestamp DESC LIMIT 5
-		`
+				SELECT component, metrics, event_timestamp
+				FROM telemetric_ledger
+				WHERE node_id = $1
+				ORDER BY event_timestamp DESC LIMIT 5
+			`
 		rows, err := store.Query(ctx, query, nodeID)
 		if err != nil {
 			return fmt.Sprintf("Database error: %v", err)
@@ -91,14 +91,14 @@ func ExecuteTool(ctx context.Context, name string, args map[string]any, store *l
 			return "Error: Missing node_id"
 		}
 
-		// This query finds the latest benchmark bookends and extracts all telemetry that fired between them.
+		// Use a CTE to grab the start bookend, calculate the end time dynamically from the JSONB,
+		// and join it against the main ledger to extract only the sandwiched telemetry.
 		query := `
 				WITH latest_run AS (
 					SELECT
 						(metrics->>'run_id')::bigint AS run_id,
 						event_timestamp AS start_time,
-						event_timestamp + ((metrics->>'duration_sec')::numeric || ' seconds')::interval AS end_time,
-						metrics
+						event_timestamp + ((metrics->>'duration_sec')::numeric || ' seconds')::interval AS end_time
 					FROM telemetric_ledger
 					WHERE node_id = $1 AND status = 'runner-start'
 					ORDER BY event_timestamp DESC
@@ -122,19 +122,23 @@ func ExecuteTool(ctx context.Context, name string, args map[string]any, store *l
 
 		var results string
 		recordCount := 0
+
+		// Unpack the JSONB payloads for the LLM
 		for rows.Next() {
 			var component string
 			var metrics []byte
 			var timestamp time.Time
-			rows.Scan(&component, &metrics, &timestamp)
-			results += fmt.Sprintf("[%s] %s: %s\n", timestamp.Format("15:04:05.000"), component, string(metrics))
-			recordCount++
+
+			if err := rows.Scan(&component, &metrics, &timestamp); err == nil {
+				results += fmt.Sprintf("[%s] %s: %s\n", timestamp.Format("15:04:05.000"), component, string(metrics))
+				recordCount++
+			}
 		}
 
 		if recordCount == 0 {
 			return "No telemetry was recorded during the last benchmark run for " + nodeID
 		}
-		return fmt.Sprintf("Found %d telemetry events during the benchmark:\n%s", recordCount, results)
+		return fmt.Sprintf("Found %d hardware telemetry events during the benchmark:\n%s", recordCount, results)
 
 	default:
 		return fmt.Sprintf("Error: Unknown tool %s", name)
