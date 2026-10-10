@@ -47,6 +47,7 @@ func RegistryNames() []string {
 
 // Envelope defines the wire protocol for MQTT control dispatches.
 type Envelope struct {
+	Action string         `json:"action"` // "start" or "abort"
 	Runner string         `json:"runner"`
 	Params map[string]any `json:"params"`
 }
@@ -55,6 +56,9 @@ type Envelope struct {
 func (e Envelope) Validate() error {
 	if e.Runner == "" {
 		return fmt.Errorf("missing runner execution name")
+	}
+	if e.Action != "" && e.Action != "start" && e.Action != "abort" {
+		return fmt.Errorf("invalid action: %s", e.Action)
 	}
 	return nil
 }
