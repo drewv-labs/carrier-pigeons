@@ -17,8 +17,9 @@ func main() {
 	log.Println("Starting Pigeoneer: CTD Edge Agent...")
 	nodeID := "ada-node-1" // Eventually pull this from env vars or config
 
-	// 1. Initialize the network relay (Telemetry Publisher)
-	mqttRelay := relay.NewMQTTClient("tcp://localhost:1883", "pigeoneer-"+nodeID)
+	// 1. Initialize the network relay with the offline spooler
+	// FIX: Pass nodeID cleanly, NewMQTTClient handles the Client ID prefix now
+	mqttRelay := relay.NewMQTTClient("tcp://localhost:1883", nodeID)
 	defer mqttRelay.Disconnect()
 	log.Println("Network relay established.")
 
