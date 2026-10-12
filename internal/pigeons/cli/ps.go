@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/drewv-labs/carrier-pigeons/internal/pigeoncoop/ledger"
@@ -24,52 +25,75 @@ var psCmd = &cobra.Command{
 	Use:   "ps",
 	Short: "Show active cluster status and telemetry health",
 	Run: func(cmd *cobra.Command, args []string) {
-		type NodeStatus struct {
-			Node   string
-			Group  string
-			Role   string
-			State  string
-			Detail string
+		dbURL := os.Getenv("PIGEONS_DB_URL")
+		if dbURL == "" {
+			dbURL = "postgres://drewv:ctd_password@localhost:5432/edge_ledger"
 		}
 
-		nodes := []NodeStatus{
-			{"jakebase", "in-stack", "coop", "running", "clean"},
-			{"radiawrt", "in-stack", "neer", "running", "slow"},
-			{"caroline-v", "in-stack", "neer", "running", "clean"},
-			{"margistars", "in-stack", "neer", "running", "clean"},
-			{"adactrl", "on-scope", "neer", "running", "hot"},
-			{"maryguider", "on-scope", "neer", "oof!!!", "last-seen={registry}"},
+		store, err := ledger.NewStore(context.Background(), dbURL)
+		if err != nil {
+			fmt.Printf("Fatal: Could not connect to ledger: %v\n", err)
+			os.Exit(1)
+		}
+		// Deferring close here keeps the connection pool alive for PigeonCare+ if it boots
+		defer store.Close()
+
+		// DISTINCT ON efficiently grabs exactly one row (the most recent) per node
+		query := `
+			SELECT DISTINCT ON (node_id)
+				node_id, component, status, event_timestamp
+			FROM telemetric_ledger
+			ORDER BY node_id, event_timestamp DESC;
+		`
+
+		rows, err := store.Query(context.Background(), query)
+		if err != nil {
+			fmt.Printf("Fatal: Failed to fetch cluster status: %v\n", err)
+			os.Exit(1)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 
 		if verydetailed {
-			fmt.Fprintln(w, "node\t| group\t| role\t| very detailed status")
+			fmt.Fprintln(w, "node\t| last component\t| state\t| detail")
 		} else {
-			fmt.Fprintln(w, "node\t| group\t| role\t| status")
+			fmt.Fprintln(w, "node\t| last component\t| state")
 		}
-		fmt.Fprintln(w, "__________________________________________\t")
+		fmt.Fprintln(w, "__________________________________________________________________\t")
 
-		degradedGroups := make(map[string][]string)
+		var degradedNodes []string
 		needsSupport := false
 
-		for _, n := range nodes {
-			if verydetailed {
-				// Print both State and Detail when -v is passed
-				statusStr := fmt.Sprintf("%s %s", n.State, n.Detail)
-				fmt.Fprintf(w, "%s\t| %s\t| %s\t| %s\n", n.Node, n.Group, n.Role, statusStr)
-			} else {
-				// Only print the base State by default
-				fmt.Fprintf(w, "%s\t| %s\t| %s\t| %s\n", n.Node, n.Group, n.Role, n.State)
-			}
+		for rows.Next() {
+			var nodeID, component, dbStatus string
+			var lastSeen time.Time
 
-			if strings.HasPrefix(n.State, "oof") || n.Detail != "clean" {
-				needsSupport = true
-				issue := fmt.Sprintf("%s (%s)", n.Node, n.Detail)
-				degradedGroups[n.Group] = append(degradedGroups[n.Group], issue)
+			if err := rows.Scan(&nodeID, &component, &dbStatus, &lastSeen); err == nil {
+				state := "running"
+				detail := "clean"
+
+				// Dynamic health check based on ledger staleness
+				timeSince := time.Since(lastSeen)
+				if timeSince > 3*time.Minute {
+					state = "oof!!!"
+					detail = fmt.Sprintf("unreachable (%.0fm ago)", timeSince.Minutes())
+					needsSupport = true
+					degradedNodes = append(degradedNodes, fmt.Sprintf("%s (%s)", nodeID, detail))
+				} else if strings.Contains(strings.ToLower(dbStatus), "error") || strings.Contains(strings.ToLower(dbStatus), "fail") {
+					state = "degraded"
+					detail = dbStatus
+					needsSupport = true
+					degradedNodes = append(degradedNodes, fmt.Sprintf("%s (%s)", nodeID, detail))
+				}
+
+				if verydetailed {
+					fmt.Fprintf(w, "%s\t| %s\t| %s\t| %s\n", nodeID, component, state, detail)
+				} else {
+					fmt.Fprintf(w, "%s\t| %s\t| %s\n", nodeID, component, state)
+				}
 			}
 		}
-
+		rows.Close()
 		w.Flush()
 
 		if addSupport && needsSupport {
@@ -83,34 +107,24 @@ var psCmd = &cobra.Command{
 			if response == "y" || response == "yes" {
 				fmt.Println("\n[+] Handoff approved. Booting PigeonCare+...")
 
+				// Inject exactly which nodes failed directly into Qwen's context window
 				var contextBuilder strings.Builder
-				for group, issues := range degradedGroups {
-					contextBuilder.WriteString(fmt.Sprintf("Group [%s]: %d issues -> %s\n", group, len(issues), strings.Join(issues, ", ")))
+				contextBuilder.WriteString("The following nodes are currently degraded or unreachable:\n")
+				for _, issue := range degradedNodes {
+					contextBuilder.WriteString(fmt.Sprintf("- %s\n", issue))
 				}
 
-				// 1. Connect to Postgres (using your local connection string)
-				dbURL := "postgres://drewv:ctd_password@localhost:5432/edge_ledger"
-				store, err := ledger.NewStore(context.Background(), dbURL)
-				if err != nil {
-					fmt.Printf("Failed to connect to ledger: %v\n", err)
-					os.Exit(1)
-				}
-				defer store.Close()
-
-				// 2. Initialize the LLM with the active database connection
 				llmCfg := adapters.LLMConfig{
 					Provider: "ollama",
 					Endpoint: "http://localhost:11434",
 					Model:    "qwen2.5-coder",
-					Store:    store, // Injected!
+					Store:    store,
 				}
 				agentLLM := adapters.NewLLMAdapter(llmCfg)
 
-				// 3. Boot Bubble Tea
 				p := tea.NewProgram(tui.NewAgentModel(contextBuilder.String(), agentLLM))
 				if _, err := p.Run(); err != nil {
 					fmt.Printf("Fatal error launching PigeonCare+: %v\n", err)
-					os.Exit(1)
 				}
 			}
 		}
