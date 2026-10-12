@@ -1,0 +1,70 @@
+name: Carrier Pigeons Distribution
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*' # Triggers a formal release on version tags (e.g., v1.0.0)
+
+jobs:
+  build:
+    name: Build Go Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin]
+        goarch: [amd64, arm64, riscv64]
+        exclude:
+          # Apple does not make RISC-V hardware
+          - goos: darwin
+            goarch: riscv64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22' # Update to your current Go version
+
+      - name: Build Binaries
+        run: |
+          mkdir -p dist
+
+          # Build Pigeoneer (Edge Daemon)
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/pigeoneer-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/pigeoneer
+
+          # Build PigeonCoop (Hub Injector)
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/pigeoncoop-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/pigeoncoop
+
+          # Build Pigeons (CLI)
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/pigeons-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/pigeons
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: carrier-pigeons-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
