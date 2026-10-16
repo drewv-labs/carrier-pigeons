@@ -41,3 +41,5 @@ graphify-out/
 
 # Misc
 data/
+
+.DS_Store

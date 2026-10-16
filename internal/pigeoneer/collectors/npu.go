@@ -22,5 +22,4 @@ func monitorNPU(pub core.TelemetryPublisher, nodeID string) {
 		log.Println("[NPU Router] Google Coral TPU detected. Booting Coral collector.")
 		go monitorNPUCoral(pub, nodeID)
 	}
-	return
 }
