@@ -31,7 +31,11 @@
 
 ---
 
+<div align="center">
+
 ## Overview
+
+</div>
 
 **CarrierPigeons** is a lightweight, production-ready Continuous Telemetric Documentation pipeline that collects system metrics from edge devices and reliably delivers them to centralized storage via MQTT—complete with robust state management, batch processing, and graceful lifecycle handling. Included Runner system provides both out-of-the-box & extensively custom executable functions such as stress-testing & benchmarking nodes, integrated natively in the **CarrierPigeons** system.
 
@@ -45,7 +49,11 @@ This project empowers developers to build scalable, observable infrastructure mo
 
 ---
 
+<div align="center">
+
 ## Features
+
+</div>
 
 |      | Component       | Details                                                                                                                                                                                                                                                                 |
 | :--- | :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -58,9 +66,13 @@ This project empowers developers to build scalable, observable infrastructure mo
 
 ---
 
+<div align="center">
+
 ## Project Structure
 
-```sh
+</div>
+
+~~~sh
 └── /
     ├── cmd/
     │   ├── pigeoncoop/   # The ingestion/ledger engine
@@ -79,19 +91,16 @@ This project empowers developers to build scalable, observable infrastructure mo
     │       └── cli/        # Cobra command definitions and Bubble Tea TUI
     └── pkg/
         └── core/           # Shared models (CTDPayload) and publisher interfaces
-```
+~~~
 
 <br>
 
 ----
 
+<div align="center">
+
 Made with ♥️ by
-```py
-DREW-V := {
-  "Simplicity in the Architecture",
-  "Efficiency in the Engineering",
-  "Purity in the Science",
-  "Audacity in the Art",
-  "Life in the Logic"
-}
-```
+
+![DREW-V Labs](.github/images/drewv-labs-github-banner.png)
+
+</div>
