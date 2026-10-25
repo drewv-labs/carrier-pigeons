@@ -5,10 +5,10 @@
 
 <img src=".github/images/icon.png" alt="CarrierPigeons Logo" width="300"/>
 
-# CarrierPigeons!
+# CarrierPigeons
 
 **Continuous Telemetric Documentation Pipeline & Execution Harness**  
-*Reliably delivered at scale*
+*Unleash the Pigeons!* 
 
 ~ Built with ~ 
 
