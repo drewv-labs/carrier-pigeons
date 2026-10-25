@@ -7,8 +7,7 @@
 
 # CarrierPigeons
 
-**Continuous Telemetric Documentation Pipeline  
-& Execution Harness**  
+**Continuous Telemetric Documentation Pipeline**  
 *Unleash the Pigeons!*  
 
 ![Demo Animation](.github/images/pigeon.gif)
