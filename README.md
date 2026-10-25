@@ -19,7 +19,7 @@
 ~ for ~
 
 ![Arch](https://img.shields.io/badge/Arch-riscv64%20|%20arm64%20|%20x86-blue)  
-![OS](https://img.shields.io/badge/OS-MacOS%20|%20UNIX%20|%20OpenWrt%20|%20Windows-blue)  
+![OS](https://img.shields.io/badge/UNIX%20|%20OS-MacOS%20|%20OpenWrt%20|%20Windows-blue)  
 ![GPU](https://img.shields.io/badge/GPU-Nvidia%20|%20AMD%20|%20Apple%20|%20Intel-blue)  
 ![NPU](https://img.shields.io/badge/NPU-Hailo%20|%20Google_Coral%20|%20Apple_ANE-blue)  
 
