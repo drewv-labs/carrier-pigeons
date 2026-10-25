@@ -31,6 +31,8 @@
 
 **CarrierPigeons** is a lightweight, production-ready Continuous Telemetric Documentation pipeline that collects system metrics from edge devices and reliably delivers them to centralized storage via MQTT—complete with robust state management, batch processing, and graceful lifecycle handling.
 
+Please note that this project is very much in active development and work-in-progress. **CarrierPigeons** is currently undergoing design expansion into an importable SDK with robust distributed node execution harness capabilities. Stay tuned!! :) 
+
 **Why CarrierPigeons?**
 
 This project empowers developers to build scalable, observable infrastructure monitoring systems without reinventing core pub/sub, storage, and resilience patterns. Transitioning beyond passive logging, CarrierPigeons acts as a proactive edge observability layer, heavily optimized for AI inference hardware, multi-node clusters, and Open Research environments. All managed through centralized CLI & TUI PigeonCommand tool. 
