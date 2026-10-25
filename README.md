@@ -7,7 +7,7 @@
 
 # CarrierPigeons!
 
-**Continuous Telemetric Documentation Engine & Execution Harness**  
+**Continuous Telemetric Documentation Pipeline & Execution Harness**  
 *Reliably delivered at scale*
 
 ~ Built with ~ 
@@ -31,9 +31,9 @@
 
 ## Overview
 
-**CarrierPigeons** is a lightweight, production-ready Continuous Telemetric Documentation pipeline that collects system metrics from edge devices and reliably delivers them to centralized storage via MQTT—complete with robust state management, batch processing, and graceful lifecycle handling.
+**CarrierPigeons** is a lightweight, production-ready Continuous Telemetric Documentation pipeline that collects system metrics from edge devices and reliably delivers them to centralized storage via MQTT—complete with robust state management, batch processing, and graceful lifecycle handling. Included Runner system provides both out-of-the-box & extensively custom executable functions such as stress-testing & benchmarking nodes, integrated natively in the **CarrierPigeons** system.
 
-Please note that this project is very much in active development and work-in-progress. **CarrierPigeons** is currently undergoing design expansion into an importable SDK with robust distributed node execution harness capabilities. Stay tuned!! :) 
+!!! Please note that this project is very much in active development and work-in-progress. **CarrierPigeons** is currently undergoing design expansion into an importable SDK with robust distributed node execution harness capabilities. Stay tuned!! :) 
 
 **Why CarrierPigeons?**
 
