@@ -7,7 +7,7 @@
 
 # CarrierPigeons!
 
-**Continuous Telemetric Documentation**  
+**Continuous Telemetric Documentation Engine & Execution Harness**  
 *Reliably delivered at scale*
 
 ~ Built with ~ 
