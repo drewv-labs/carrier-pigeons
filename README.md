@@ -10,8 +10,6 @@
 **Continuous Telemetric Documentation Pipeline**  
 *Unleash the Pigeons!*  
 
-![Demo Animation](.github/images/pigeon.gif)
-
 ~ Built with ~ 
 
 <img src="https://img.shields.io/badge/Go-00ADD8.svg?style=default&logo=Go&logoColor=white" alt="Go">
